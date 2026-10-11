@@ -32,3 +32,5 @@ python3 scripts/publish.py --channel pypi
 ```
 
 GitHub Actions 首次使用前需在仓库配置 `NPM_TOKEN`、`PYPI_TOKEN` secrets；SSH 推送权限不包含管理 Actions secrets 的权限。
+
+npm 返回发布成功后，公开安装仍可能等待平台扫描（常见几分钟）。请检查 `npm view codex-webdesk version --registry=https://registry.npmjs.org` 是否为本次版本，不要以命令退出码作为已经上线的唯一证据，也不要在扫描中重复发布。`0.0.0-stage` 是占位版本，不能作为工具安装使用。若 `npm stage list` 有记录，则需维护者完成 2FA 批准；列表为空时应先核实扫描状态。
