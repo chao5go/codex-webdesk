@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1 (2026-10-11)
+
+- 自动发布，源提交 `03f5397`；具体变更见 GitHub Release。
+
 ## 0.1.0
 
 - 首次以 Codex Webdesk 发布 npm 与 PyPI 包，支持 uv tool 和 uvx。

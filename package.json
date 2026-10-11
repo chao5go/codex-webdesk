@@ -1,6 +1,6 @@
 {
   "name": "codex-webdesk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A lightweight, self-hosted web workbench for Codex CLI on remote servers",
   "type": "module",
   "license": "MIT",
