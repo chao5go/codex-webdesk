@@ -1,29 +1,163 @@
-name: Publish packages
+name: Release
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
+    inputs:
+      bump:
+        description: Version increment
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
 permissions:
   contents: read
+
 jobs:
-  publish:
+  build:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      actions: read
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: astral-sh/setup-uv@v6
+      - name: Prepare version (reuse on rerun)
+        id: version
+        env:
+          RELEASE_SOURCE: ${{ github.sha }}
+          RELEASE_BUMP: ${{ inputs.bump || 'patch' }}
+        run: python3 scripts/prepare-release.py --source "$RELEASE_SOURCE" --bump "$RELEASE_BUMP"
+      - name: Build and test new release
+        if: steps.version.outputs.reused != 'true'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          npm ci
+          npm run check
+          npm run build
+          npm test
+          npm run test:package
+          python3 -m unittest discover -s test -p 'release_test.py'
+          npx playwright install --with-deps chromium
+          npm run test:browser
+          uv build --out-dir python-dist
+          uv run --no-project --with "./python-dist/codex_webdesk-$VERSION-py3-none-any.whl" python scripts/python-package-smoke.py
+          uv run --no-project --with "./python-dist/codex_webdesk-$VERSION.tar.gz" python scripts/python-package-smoke.py
+      - name: Collect tested artifacts
+        if: steps.version.outputs.reused != 'true'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          mkdir release-artifacts
+          cp "codex-webdesk-$VERSION.tgz" python-dist/* release-artifacts/
+          (cd release-artifacts && sha256sum * > SHA256SUMS)
+      - name: Restore original artifacts on rerun
+        if: steps.version.outputs.reused == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: gh run download "$RUN_ID" --name "release-$VERSION" --dir release-artifacts
+      - uses: actions/upload-artifact@v4
+        if: steps.version.outputs.reused != 'true'
+        with:
+          name: release-${{ steps.version.outputs.version }}
+          path: release-artifacts/
+          retention-days: 30
+          overwrite: true
+      - name: Commit version and tag after validation
+        if: steps.version.outputs.reused != 'true'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          RELEASE_SOURCE: ${{ github.sha }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add package.json package-lock.json CHANGELOG.md
+          git commit -m "chore(release): $VERSION" -m "Release-Source: $RELEASE_SOURCE"
+          git tag -a "v$VERSION" -m "Codex Webdesk $VERSION"
+          git push --atomic origin HEAD:main "v$VERSION"
+
+  npm:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
     environment: release
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.build.outputs.version }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org
-      - uses: astral-sh/setup-uv@v6
-      - run: npm ci
-      - run: npm run check && npm run build && npm test && npm run test:package
-      - run: npx playwright install --with-deps chromium
-      - run: npm run test:browser
-      - run: uv build --out-dir python-dist
-      - run: uv run --no-project --with ./python-dist/codex_webdesk-$(node -p "require('./package.json').version")-py3-none-any.whl python scripts/python-package-smoke.py
-      - run: uv run --no-project --with ./python-dist/codex_webdesk-$(node -p "require('./package.json').version").tar.gz python scripts/python-package-smoke.py
-      - run: npm publish ./codex-webdesk-$(node -p "require('./package.json').version").tgz
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-${{ needs.build.outputs.version }}
+          path: release-artifacts
+      - name: Publish and verify npm
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - run: uv publish python-dist/*
+          VERSION: ${{ needs.build.outputs.version }}
+        run: python3 scripts/registry-release.py npm --version "$VERSION"
+
+  pypi:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: release
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.build.outputs.version }}
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-${{ needs.build.outputs.version }}
+          path: release-artifacts
+      - name: Publish and verify PyPI
         env:
           UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
+          UV_INDEX_URL: https://pypi.org/simple
+          VERSION: ${{ needs.build.outputs.version }}
+        run: python3 scripts/registry-release.py pypi --version "$VERSION"
+
+  github-release:
+    needs: [build, npm, pypi]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-${{ needs.build.outputs.version }}
+          path: release-artifacts
+      - name: Create release with downloadable packages
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          if ! gh release view "v$VERSION" >/dev/null 2>&1; then
+            gh release create "v$VERSION" --verify-tag --title "Codex Webdesk $VERSION" --generate-notes
+          fi
+          gh release upload "v$VERSION" release-artifacts/* --clobber

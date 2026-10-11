@@ -4,7 +4,7 @@
 
 轻量、自托管、单端口、插件式工具导航。浏览器负责输入和查看，任务仍在服务器的项目目录中运行，使用服务器已有的 Codex 登录与配置。MIT 开源，适合个人使用。
 
-[English](docs/README.en.md) · [部署指南](docs/deployment.md) · [架构与接口](docs/architecture.md) · [贡献指南](CONTRIBUTING.md) · [插件接入指南](docs/plugins.md) · [发布指南](docs/releasing.md) · [迭代规划](docs/roadmap.md)
+[English](docs/README.en.md) · [部署指南](docs/deployment.md) · [架构与接口](docs/architecture.md) · [贡献指南](CONTRIBUTING.md) · [插件接入指南](docs/plugins.md) · [自动发布](docs/releasing.md) · [仓库设置](docs/repository-settings.md) · [迭代规划](docs/roadmap.md)
 
 ![任务工作台（模拟 CLI 演示）](docs/screenshot.png)
 
@@ -64,6 +64,10 @@ npm pack
 npm install -g ./codex-webdesk-0.1.0.tgz
 codex-webdesk --help
 ```
+
+## 自动发布
+
+推送或合并到 `main` 后，GitHub Actions 自动增加 patch 版本，测试、打包并发布 npm/PyPI，再生成带安装包的 GitHub Release。手动运行 Release 可选择 minor/major；失败重跑保留同一版本。开始新修改前先 `git pull --ff-only`，同步机器人的版本提交。详见 [自动发布指南](docs/releasing.md) 和 [仓库设置说明](docs/repository-settings.md)。
 
 ## 安装与升级
 
