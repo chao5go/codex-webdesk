@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "codex-webdesk"
+dynamic = ["version"]
+description = "A self-hosted browser workbench for Codex CLI; requires Node.js 22+"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "chao5go"}]
+keywords = ["codex", "web", "remote", "workbench"]
+classifiers = ["Programming Language :: Python :: 3", "Operating System :: POSIX :: Linux", "Operating System :: MacOS", "Environment :: Web Environment"]
+
+[project.urls]
+Homepage = "https://github.com/chao5go/codex-webdesk"
+Issues = "https://github.com/chao5go/codex-webdesk/issues"
+
+[project.scripts]
+codex-webdesk = "codex_webdesk.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "python"}
+packages = ["codex_webdesk"]

@@ -183,6 +183,7 @@ export class Tasks extends EventEmitter {
       const env = { ...process.env, CODEX_HOME: this.options.codexHome };
       // Access tokens are for this server only; never pass them into Codex/model-launched shells.
       delete env.CODEX_REMOTE_WEB_TOKEN;
+      delete env.CODEX_WEBDESK_TOKEN;
       const child = spawn(this.options.codexBin, buildArgs(params), {
         cwd: params.cwd,
         env,

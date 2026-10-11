@@ -1,10 +1,10 @@
-# Codex Remote Web
+# Codex Webdesk
 
 **把远程 VPS 上的 Codex CLI，变成浏览器中的任务工作台。**
 
 轻量、自托管、单端口、插件式工具导航。浏览器负责输入和查看，任务仍在服务器的项目目录中运行，使用服务器已有的 Codex 登录与配置。MIT 开源，适合个人使用。
 
-[English](docs/README.en.md) · [部署指南](docs/deployment.md) · [架构与接口](docs/architecture.md) · [贡献指南](CONTRIBUTING.md) · [插件接入指南](docs/plugins.md)
+[English](docs/README.en.md) · [部署指南](docs/deployment.md) · [架构与接口](docs/architecture.md) · [贡献指南](CONTRIBUTING.md) · [插件接入指南](docs/plugins.md) · [发布指南](docs/releasing.md) · [迭代规划](docs/roadmap.md)
 
 ![任务工作台（模拟 CLI 演示）](docs/screenshot.png)
 
@@ -35,7 +35,7 @@ node bin/cli.js start --port 8080 --cwd /绝对路径/你的项目
 首次启动会打印随机 Token 与登录链接。默认每次启动生成新 Token，不写入配置文件；固定 Token 推荐使用环境变量：
 
 ```bash
-export CODEX_REMOTE_WEB_TOKEN="$(openssl rand -hex 32)"
+export CODEX_WEBDESK_TOKEN="$(openssl rand -hex 32)"
 node bin/cli.js start --port 8080 --cwd /绝对路径/你的项目
 ```
 
@@ -52,24 +52,53 @@ ssh -N -L 8080:127.0.0.1:8080 your-user@your-vps
 ```bash
 npm run build
 npm link
-codex-remote-web start --port 8080
+codex-webdesk start --port 8080
 # 省略 start 也可以
-codex-remote-web --port 8080
+codex-webdesk --port 8080
 ```
 
-项目尚未发布到 npm。验证安装包：
+本地验证安装包：
 
 ```bash
 npm pack
-npm install -g ./codex-remote-web-0.1.0.tgz
-codex-remote-web --help
+npm install -g ./codex-webdesk-0.1.0.tgz
+codex-webdesk --help
 ```
+
+## 安装与升级
+
+运行要求：Node.js 22+、已安装并登录的 Codex CLI。完整会话管理还需 Python 3.10+。Python/uv 安装会自带 Python 启动入口，但不会安装 Node.js 或 Codex。
+
+```bash
+# npm 安装 / 升级
+npm install -g codex-webdesk
+npm install -g codex-webdesk@latest
+
+# uv 安装 / 升级（推荐 Python 渠道）
+uv tool install codex-webdesk
+uv tool upgrade codex-webdesk
+# 若命令目录尚未加入 PATH
+uv tool update-shell
+
+# 临时试用指定版本
+uvx codex-webdesk@0.1.0 start --cwd /srv/my-project
+
+# 也可在 Python 虚拟环境中使用 pip
+python -m pip install codex-webdesk
+python -m codex_webdesk --help
+
+codex-webdesk start --cwd /srv/my-project
+```
+
+选择 npm 或 uv 其中一个渠道安装，避免同名命令的 PATH 冲突。安装更新不会覆盖用户配置与任务历史。新安装使用 `~/.local/share/codex-webdesk` 和 `~/.config/codex-webdesk/plugins`；新目录不存在时自动沿用旧的 `codex-remote-web` 数据/插件目录。旧环境变量 `CODEX_REMOTE_WEB_TOKEN` 仍兼容，新变量 `CODEX_WEBDESK_TOKEN` 优先。
+
+Python 包内包含与 npm 同版本的 Node 服务、前端和会话管理代码，不在启动时下载 npm 包；默认使用当前 Python 环境执行会话插件。首版支持 Linux/macOS，Windows 未验证。
 
 ## 插件式工具接入
 
 内置“任务工作台”和“Codex 会话管理”两个入口。你原有的 history 页面已适配为独立插件，原工具和数据目录保持可继续使用。
 
-新增工具页只需一个 `plugin.json` 和 `public/` 目录；需要后端时加 `server.mjs`，共用登录和端口，不必修改宿主代码。默认扫描 `~/.config/codex-remote-web/plugins/`，重启生效。
+新增工具页只需一个 `plugin.json` 和 `public/` 目录；需要后端时加 `server.mjs`，共用登录和端口，不必修改宿主代码。默认扫描 `~/.config/codex-webdesk/plugins/`，重启生效。
 
 ```bash
 # 试用附带的服务器概览插件
@@ -81,7 +110,7 @@ npm start -- --plugins-dir ./examples/plugins
 ## 参数与配置
 
 ```bash
-codex-remote-web start \
+codex-webdesk start \
   --host 127.0.0.1 \
   --port 8080 \
   --cwd /srv/projects/my-app \
@@ -98,14 +127,14 @@ codex-remote-web start \
 | `--workspace-root` | 不限制 | 校验工作 / 上下文目录的真实路径范围 |
 | `--codex-home` | `$CODEX_HOME` 或 `~/.codex` | CLI 配置、登录和会话目录 |
 | `--codex-bin` | `codex` | CLI 可执行文件，也可指定绝对路径 |
-| `--data-dir` | `~/.local/share/codex-remote-web` | Web 任务 JSON 目录 |
-| `--plugins-dir` | `~/.config/codex-remote-web/plugins` | 扫描本地工具插件 |
+| `--data-dir` | `~/.local/share/codex-webdesk` | Web 任务 JSON 目录 |
+| `--plugins-dir` | `~/.config/codex-webdesk/plugins` | 扫描本地工具插件 |
 | `--disable-plugins` | 无 | 逗号分隔的禁用插件 ID |
 | `--config` | 无 | JSON 配置文件 |
 | `--origin` | 无 | 反向代理下允许的精确浏览器 Origin |
 | `--secure-cookie` | 关闭 | HTTPS 部署时设置 Secure Cookie |
 
-配置键使用 camelCase，参考 [config.example.json](config.example.json)。优先级：命令行 > `CODEX_REMOTE_WEB_TOKEN` > 配置文件 > 默认值。登录会话有效期 24 小时，重启服务会使登录 Cookie 失效。
+配置键使用 camelCase，参考 [config.example.json](config.example.json)。优先级：命令行 > `CODEX_WEBDESK_TOKEN` > 配置文件 > 默认值。登录会话有效期 24 小时，重启服务会使登录 Cookie 失效。
 
 ## 与原有 Codex history 的关系
 

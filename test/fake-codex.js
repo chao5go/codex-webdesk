@@ -35,7 +35,7 @@ if (prompt.includes("slow")) {
       type: "test.args",
       args: process.argv.slice(2),
       prompt,
-      serverToken: process.env.CODEX_REMOTE_WEB_TOKEN || null,
+      serverToken: process.env.CODEX_REMOTE_WEB_TOKEN || process.env.CODEX_WEBDESK_TOKEN || null,
     }),
   );
 }

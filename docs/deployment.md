@@ -5,7 +5,7 @@
 默认监听本机，不需要开放 VPS 防火墙端口。服务器运行：
 
 ```bash
-codex-remote-web start --cwd /srv/projects/my-app
+codex-webdesk start --cwd /srv/projects/my-app
 ```
 
 本地电脑运行：
@@ -18,30 +18,30 @@ ssh -N -L 8080:127.0.0.1:8080 your-user@your-vps
 
 ## 常驻服务：systemd 用户服务
 
-先安装打包好的项目，运行 `command -v codex-remote-web` 和 `command -v codex`，填入实际绝对路径。不要以 root 用户运行此工作台。
+先安装打包好的项目，运行 `command -v codex-webdesk` 和 `command -v codex`，填入实际绝对路径。不要以 root 用户运行此工作台。
 
-`~/.config/codex-remote-web/environment`：
+`~/.config/codex-webdesk/environment`：
 
 ```ini
-CODEX_REMOTE_WEB_TOKEN=替换为至少32字节随机Token
+CODEX_WEBDESK_TOKEN=替换为至少32字节随机Token
 PATH=/home/your-user/.npm-global/bin:/usr/local/bin:/usr/bin:/bin
 ```
 
 ```bash
-chmod 600 ~/.config/codex-remote-web/environment
+chmod 600 ~/.config/codex-webdesk/environment
 ```
 
-`~/.config/systemd/user/codex-remote-web.service`：
+`~/.config/systemd/user/codex-webdesk.service`：
 
 ```ini
 [Unit]
-Description=Codex Remote Web
+Description=Codex Webdesk
 After=network.target
 
 [Service]
 Type=simple
-EnvironmentFile=%h/.config/codex-remote-web/environment
-ExecStart=/home/your-user/.npm-global/bin/codex-remote-web start --cwd /srv/projects/my-app --workspace-root /srv/projects --codex-bin /home/your-user/.npm-global/bin/codex
+EnvironmentFile=%h/.config/codex-webdesk/environment
+ExecStart=/home/your-user/.npm-global/bin/codex-webdesk start --cwd /srv/projects/my-app --workspace-root /srv/projects --codex-bin /home/your-user/.npm-global/bin/codex
 Restart=on-failure
 RestartSec=3
 KillMode=control-group
@@ -54,8 +54,8 @@ WantedBy=default.target
 
 ```bash
 systemctl --user daemon-reload
-systemctl --user enable --now codex-remote-web
-journalctl --user -u codex-remote-web -f
+systemctl --user enable --now codex-webdesk
+journalctl --user -u codex-webdesk -f
 ```
 
 需要登出后仍运行，可由服务器管理员为该用户启用 linger。不要直接将其他项目的认证文件或已有共享代理配置复制进开源仓库。
@@ -75,7 +75,7 @@ codex.example.com {
 服务启动参数添加：
 
 ```bash
-codex-remote-web start --origin https://codex.example.com --secure-cookie --cwd /srv/projects/my-app
+codex-webdesk start --origin https://codex.example.com --secure-cookie --cwd /srv/projects/my-app
 ```
 
 代理需保留原始 `Host`，禁用 SSE 缓冲，并允许持续响应。Token 保存在环境文件中，网页登录时手动输入，避免包含 Token 的查询链接进入访问日志。可在代理层添加 Basic Auth，应用自身仍需 Token。

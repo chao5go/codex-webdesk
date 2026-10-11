@@ -1,0 +1,7 @@
+include package.json config.example.json LICENSE README.md setup.py
+recursive-include bin *.js
+recursive-include src *.js *.py *.html *.css
+recursive-include dist *.js *.html *.css *.txt
+recursive-include examples *.js *.mjs *.html *.css *.json
+recursive-include python *.py
+global-exclude __pycache__ *.pyc

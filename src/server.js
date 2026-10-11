@@ -1,3 +1,4 @@
+import { version } from "./version.js";
 import http from "node:http";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
@@ -148,7 +149,7 @@ export async function createServer(options) {
             codexHome: options.codexHome,
             workspaceRoot: options.workspaceRoot || null,
             activeId: tasks.active?.item.id || null,
-            version: "0.1.0",
+            version,
           });
         if (route === "/api/plugins" && req.method === "GET")
           return json(res, 200, { plugins: plugins.list() });

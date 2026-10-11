@@ -1,0 +1,29 @@
+name: Publish packages
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - uses: astral-sh/setup-uv@v6
+      - run: npm ci
+      - run: npm run check && npm test && npm run test:package
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
+      - run: uv build --out-dir python-dist
+      - run: uv run --no-project --with ./python-dist/codex_webdesk-$(node -p "require('./package.json').version")-py3-none-any.whl python scripts/python-package-smoke.py
+      - run: uv run --no-project --with ./python-dist/codex_webdesk-$(node -p "require('./package.json').version").tar.gz python scripts/python-package-smoke.py
+      - run: npm publish ./codex-webdesk-$(node -p "require('./package.json').version").tgz
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: uv publish python-dist/*
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}

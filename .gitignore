@@ -7,3 +7,7 @@ coverage/
 *.log
 __pycache__/
 *.pyc
+build/
+*.egg-info/
+.venv/
+python-dist/

@@ -3,19 +3,21 @@ import { parseArgs } from "node:util";
 import { readFile, realpath } from "node:fs/promises";
 import { randomBytes } from "node:crypto";
 import os from "node:os";
+import { existsSync } from "node:fs";
+import { version } from "../src/version.js";
 import path from "node:path";
 import { createServer } from "../src/server.js";
-const help = `codex-remote-web [start] [options]
+const help = `codex-webdesk [start] [options]
 
   --port <number>         Port (default: 8080)
   --host <address>        Listen address (default: 127.0.0.1)
-  --token <secret>        Access token; prefer CODEX_REMOTE_WEB_TOKEN
+  --token <secret>        Access token; prefer CODEX_WEBDESK_TOKEN
   --cwd <directory>       Default project directory (default: current directory)
   --workspace-root <dir>  Restrict cwd/additional directories to this root
   --codex-home <dir>      Codex history/auth directory (default: CODEX_HOME or ~/.codex)
   --codex-bin <path>      Codex executable (default: codex)
-  --data-dir <dir>        Task history (default: ~/.local/share/codex-remote-web)
-  --plugins-dir <dir>    Local tool plugins (default: ~/.config/codex-remote-web/plugins)
+  --data-dir <dir>        Task history (default: ~/.local/share/codex-webdesk)
+  --plugins-dir <dir>    Local tool plugins (default: ~/.config/codex-webdesk/plugins)
   --disable-plugins <ids> Comma-separated plugin IDs to disable
   --config <file>         JSON configuration (camelCase keys)
   --origin <url>          Expected browser origin behind a reverse proxy
@@ -52,7 +54,7 @@ try {
     process.exit(0);
   }
   if (values.version) {
-    console.log("0.1.0");
+    console.log(version);
     process.exit(0);
   }
   if (
@@ -85,18 +87,23 @@ try {
     Object.keys(config).some((k) => !allowed.has(k))
   )
     throw new Error("Invalid configuration keys");
+  const userPath = (base, suffix = "") => {
+    const current = path.join(os.homedir(), base, "codex-webdesk", suffix);
+    const legacy = path.join(os.homedir(), base, "codex-remote-web", suffix);
+    return existsSync(current) || !existsSync(legacy) ? current : legacy;
+  };
   const options = {
     port: 8080,
     host: "127.0.0.1",
     cwd: process.cwd(),
     codexHome: process.env.CODEX_HOME || path.join(os.homedir(), ".codex"),
     codexBin: "codex",
-    dataDir: path.join(os.homedir(), ".local/share/codex-remote-web"),
-    pluginsDir: path.join(os.homedir(), ".config/codex-remote-web/plugins"),
+    dataDir: userPath(".local/share"),
+    pluginsDir: userPath(".config", "plugins"),
     ...config,
   };
-  if (process.env.CODEX_REMOTE_WEB_TOKEN)
-    options.token = process.env.CODEX_REMOTE_WEB_TOKEN;
+  if (process.env.CODEX_WEBDESK_TOKEN || process.env.CODEX_REMOTE_WEB_TOKEN)
+    options.token = process.env.CODEX_WEBDESK_TOKEN || process.env.CODEX_REMOTE_WEB_TOKEN;
   for (const [key, value] of Object.entries(values))
     if (!["config", "help", "version"].includes(key))
       options[key.replace(/-([a-z])/g, (_, c) => c.toUpperCase())] = value;
@@ -177,7 +184,7 @@ try {
         : options.host;
     const address = `http://${host}:${options.port}`;
     console.log(
-      `Codex Remote Web 0.1.0\nListening: ${options.host}:${options.port}\nOpen: ${address}`,
+      `Codex Webdesk ${version}\nListening: ${options.host}:${options.port}\nOpen: ${address}`,
     );
     if (generated)
       console.log(

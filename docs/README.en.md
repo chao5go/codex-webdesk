@@ -1,4 +1,4 @@
-# Codex Remote Web
+# Codex Webdesk
 
 A lightweight, self-hosted browser workbench for **Codex CLI on your VPS**. Run prompts, follow streaming output, stop tasks and browse local history. MIT licensed; no cloud storage or separate model API integration.
 
@@ -18,7 +18,7 @@ The server binds to localhost and prints a generated access token. On your local
 ssh -N -L 8080:127.0.0.1:8080 your-user@your-vps
 ```
 
-Open `http://127.0.0.1:8080` and enter the token. Set `CODEX_REMOTE_WEB_TOKEN` to a random fixed secret for later startups. Use HTTPS when exposing the service through a reverse proxy.
+Open `http://127.0.0.1:8080` and enter the token. Set `CODEX_WEBDESK_TOKEN` to a random fixed secret for later startups. Use HTTPS when exposing the service through a reverse proxy.
 
 ## Features
 
@@ -42,3 +42,7 @@ npm pack
 ```
 
 The project has not been published to npm. See the [Chinese README](../README.md) for complete configuration and limits, [deployment](deployment.md), [architecture/API](architecture.md) and [contributing](../CONTRIBUTING.md).
+
+## Package installation
+
+Install with `npm install -g codex-webdesk` or `uv tool install codex-webdesk`, then run `codex-webdesk start --cwd /path/to/project`. Upgrade with `npm install -g codex-webdesk@latest` or `uv tool upgrade codex-webdesk`. For a temporary run use `uvx codex-webdesk@0.1.0 start`. Both distributions require Node.js 22+ and an installed, authenticated Codex CLI. The npm distribution additionally needs Python 3.10+ for full session management. Linux/macOS are supported; Windows is unverified. Choose one installation channel to avoid command collisions. Legacy data/plugin directories and `CODEX_REMOTE_WEB_TOKEN` remain supported; `CODEX_WEBDESK_TOKEN` takes precedence.

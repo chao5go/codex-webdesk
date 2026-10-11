@@ -1,17 +1,18 @@
-import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, rm, readFile } from 'node:fs/promises';
 import { execFileSync, spawn } from 'node:child_process';
 import { createServer } from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
 import assert from 'node:assert/strict';
-const archive = path.resolve('codex-remote-web-0.1.0.tgz');
+const { name, version } = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+const archive = path.resolve(`${name}-${version}.tgz`);
 const root = await mkdtemp(path.join(os.tmpdir(), 'codex-plugin-package-'));
 let child;
 try {
   execFileSync('npm', ['install', '--prefix', root, '--omit=dev', '--no-audit', '--no-fund', archive], { stdio: 'pipe' });
-  const packageDir = path.join(root, 'node_modules/codex-remote-web');
-  const bin = path.join(root, 'node_modules/.bin/codex-remote-web');
-  assert.equal(execFileSync(bin, ['--version'], { encoding: 'utf8' }).trim(), '0.1.0');
+  const packageDir = path.join(root, `node_modules/${name}`);
+  const bin = path.join(root, `node_modules/.bin/${name}`);
+  assert.equal(execFileSync(bin, ['--version'], { encoding: 'utf8' }).trim(), version);
   const home = path.join(root, 'codex');
   await mkdir(path.join(home, 'sessions'), { recursive: true });
   const id = '77777777-7777-4777-8777-777777777777';

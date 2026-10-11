@@ -15,7 +15,7 @@
 
 ## 添加一个工具页
 
-默认扫描 `~/.config/codex-remote-web/plugins/` 的一级子目录；也可通过 `--plugins-dir` 或 JSON 配置的 `pluginsDir` 指定位置。默认不会扫描项目工作目录中的代码。
+默认扫描 `~/.config/codex-webdesk/plugins/` 的一级子目录；也可通过 `--plugins-dir` 或 JSON 配置的 `pluginsDir` 指定位置。默认不会扫描项目工作目录中的代码。
 
 ```text
 plugins/
@@ -123,8 +123,8 @@ npm start -- --plugins-dir ./examples/plugins
 安装到默认插件目录：
 
 ```bash
-mkdir -p ~/.config/codex-remote-web/plugins
-cp -R examples/plugins/server-info ~/.config/codex-remote-web/plugins/
+mkdir -p ~/.config/codex-webdesk/plugins
+cp -R examples/plugins/server-info ~/.config/codex-webdesk/plugins/
 ```
 
 重启服务即可。npm 包也包含 `examples/`，可作为自己的插件模板。源码仓库中的 `npm run test:package` 会验证独立安装后，插件页面、接口、Python 适配和离线导出仍可用。
@@ -134,14 +134,14 @@ cp -R examples/plugins/server-info ~/.config/codex-remote-web/plugins/
 禁用插件同时移除其页面和 API：
 
 ```bash
-codex-remote-web start --disable-plugins codex-history,server-info
+codex-webdesk start --disable-plugins codex-history,server-info
 ```
 
 配置示例：
 
 ```json
 {
-  "pluginsDir": "/home/your-user/.config/codex-remote-web/plugins",
+  "pluginsDir": "/home/your-user/.config/codex-webdesk/plugins",
   "disabledPlugins": ["server-info"],
   "pluginOptions": {
     "codex-history": { "pythonBin": "/usr/bin/python3" },

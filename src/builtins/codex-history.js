@@ -8,7 +8,7 @@ const execute = promisify(execFile);
 const folder = fileURLToPath(new URL("./codex-history/", import.meta.url));
 export async function historyPlugin({ options, history, refresh }) {
   const python =
-    options.pluginOptions?.["codex-history"]?.pythonBin || "python3";
+    options.pluginOptions?.["codex-history"]?.pythonBin || process.env.CODEX_WEBDESK_PYTHON || "python3";
   let available = true,
     reason = "";
   if (!(options.disabledPlugins || []).includes("codex-history")) {
@@ -40,6 +40,7 @@ export async function historyPlugin({ options, history, refresh }) {
           PYTHONDONTWRITEBYTECODE: "1",
         };
         delete env.CODEX_REMOTE_WEB_TOKEN;
+        delete env.CODEX_WEBDESK_TOKEN;
         try {
           const pending = execute(python, [folder + "bridge.py"], {
             env,

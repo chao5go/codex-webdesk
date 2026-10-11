@@ -159,6 +159,8 @@ test("spawn streams JSON events, keeps ANSI, persists output and does not shell-
   const app = await fixture(t);
   const prompt = "literal $(touch /tmp/should-not-exist) `echo unsafe` 中文";
   process.env.CODEX_REMOTE_WEB_TOKEN = "must-not-leak";
+  process.env.CODEX_WEBDESK_TOKEN = "new-must-not-leak";
+  t.after(() => delete process.env.CODEX_WEBDESK_TOKEN);
   t.after(() => delete process.env.CODEX_REMOTE_WEB_TOKEN);
   const response = await app.request("/api/tasks", {
     method: "POST",
