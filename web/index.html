@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Codex Remote Web</title>
+    <link rel="stylesheet" href="/app.css" />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div id="login" class="login">
+      <form id="login-form" class="login-card">
+        <div class="brand-icon">⌘</div>
+        <h1>Codex Remote Web</h1>
+        <p>连接你的服务器，继续手头的工作。</p>
+        <label
+          >Access Token<input
+            id="token"
+            type="password"
+            autocomplete="current-password"
+            required
+            placeholder="输入启动时的访问 Token" /></label
+        ><button class="primary">连接工作台 →</button>
+        <p id="login-error" role="alert"></p>
+        <small>Token 仅用于访问此工作台，Codex 使用服务器上的登录配置。</small>
+      </form>
+    </div>
+    <div id="workspace" class="layout" hidden>
+      <aside class="sidebar">
+        <a class="brand" href="/"
+          ><span class="brand-icon">⌘</span
+          ><span>Codex <b>Remote Web</b></span></a
+        >
+        <div class="server-label">
+          <span class="dot"></span> REMOTE WORKSPACE <span id="version"></span>
+        </div>
+        <nav id="tool-nav" class="tool-nav" aria-label="工具导航"></nav>
+        <div id="workbench-sidebar">
+          <button id="new-task" class="new-task">＋ 新建任务</button>
+          <div class="history-tabs">
+            <button id="web-history" class="selected">Web 任务</button
+            ><button id="cli-history">CLI 会话</button>
+          </div>
+          <div class="search-wrap">
+            <input
+              id="search"
+              type="search"
+              placeholder="搜索标题、项目、Prompt…"
+              aria-label="搜索历史"
+            />
+          </div>
+          <div class="history-heading">
+            <span id="history-count">RECENT TASKS</span
+            ><button id="refresh" title="刷新历史">↻</button>
+          </div>
+          <div id="history-list" class="history-list"></div>
+        </div>
+        <footer>
+          <span>SELF-HOSTED · v0.1</span><button id="logout">退出登录</button>
+        </footer>
+      </aside>
+      <main id="workbench-view">
+        <header>
+          <div>
+            <span class="eyebrow">YOUR SERVER. YOUR WORKFLOW.</span>
+            <h1>任务工作台</h1>
+          </div>
+          <div id="status" class="status idle">● Idle</div>
+        </header>
+        <div id="notice" class="notice" role="status" hidden></div>
+        <div class="deck">
+          <section class="composer">
+            <div class="section-title">
+              <h2>开始一次任务</h2>
+              <span>01 / CONFIGURE</span>
+            </div>
+            <form id="task-form">
+              <label
+                >工作目录<input
+                  id="cwd"
+                  required
+                  placeholder="/home/ubuntu/project"
+              /></label>
+              <div class="fields">
+                <label
+                  >模型<input
+                    id="model"
+                    list="models"
+                    placeholder="沿用 CLI 配置" /><datalist id="models">
+                    <option value="gpt-5.3-codex"></option>
+                    <option value="gpt-5.2-codex"></option></datalist></label
+                ><label
+                  >推理强度<select id="effort">
+                    <option value="">默认</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="xhigh">Extra high</option>
+                  </select></label
+                >
+              </div>
+              <label
+                >执行权限<select id="sandbox">
+                  <option value="read-only">Read only · 只读分析</option>
+                  <option value="workspace-write">
+                    Workspace write · 允许修改项目
+                  </option>
+                </select></label
+              >
+              <details>
+                <summary>更多上下文目录</summary>
+                <label
+                  >每行一个绝对路径<textarea
+                    id="context-paths"
+                    rows="2"
+                    placeholder="/home/ubuntu/shared"
+                  ></textarea></label
+                ><small>--add-dir 会扩大可写范围（仍受沙箱限制）。</small>
+              </details>
+              <div class="divider"></div>
+              <div class="label-row">
+                <label for="prompt">任务指令</label><span>QUICK ACTIONS</span>
+              </div>
+              <div class="presets">
+                <button type="button" data-preset="review">◎ 代码评审</button
+                ><button type="button" data-preset="tests">▤ 生成单测</button
+                ><button type="button" data-preset="debug">◇ Bug 排查</button
+                ><button type="button" data-preset="refactor">
+                  ↗ 代码重构
+                </button>
+              </div>
+              <div id="resume-banner" class="resume-banner" hidden>
+                <span id="resume-label"></span
+                ><button type="button" id="cancel-resume">取消</button>
+              </div>
+              <textarea
+                id="prompt"
+                rows="8"
+                required
+                maxlength="50000"
+                placeholder="描述你的目标、相关文件和预期结果…"
+              ></textarea>
+              <div class="submit-row">
+                <span>⌘ / Ctrl + Enter 执行</span
+                ><button id="run" class="primary">
+                  执行任务 <span>↗</span>
+                </button>
+              </div>
+            </form>
+            <p class="hint">
+              在服务器上运行 Codex CLI，使用其已有模型与登录配置。
+            </p>
+          </section>
+          <section class="console">
+            <div class="section-title">
+              <h2>执行输出</h2>
+              <span>02 / OBSERVE</span>
+            </div>
+            <div class="console-toolbar">
+              <div class="output-tabs">
+                <button id="structured-tab" class="selected">结构化</button
+                ><button id="raw-tab">Raw Terminal</button>
+              </div>
+              <div>
+                <button id="export" title="导出当前记录">导出</button
+                ><button id="stop" class="danger" disabled>■ 中断</button>
+              </div>
+            </div>
+            <div id="output-meta" class="output-meta">
+              等待任务 · 实时输出将在此显示
+            </div>
+            <div id="structured" class="output">
+              <div class="empty">
+                <div class="empty-symbol">⌘</div>
+                <h3>让下一步更清晰</h3>
+                <p>
+                  选择快捷指令，或写下你的任务。<br />代码、执行过程和结果会实时出现在这里。
+                </p>
+                <span>CONNECTED TO YOUR CLI</span>
+              </div>
+            </div>
+            <div id="raw" hidden></div>
+            <div class="console-footer">
+              <span id="connection">SSE · 等待连接</span
+              ><span>LOCAL DATA · NO CLOUD STORAGE</span>
+            </div>
+          </section>
+        </div>
+        <div class="bottom-note">
+          CODEX REMOTE WEB <span>为远程开发而生。把工作留在服务器上。</span>
+        </div>
+      </main>
+      <main id="plugin-view" class="plugin-main" hidden>
+        <header class="plugin-header">
+          <div>
+            <span class="eyebrow">TOOLS / WORKSPACE</span>
+            <h1 id="plugin-title"></h1>
+            <p id="plugin-description"></p>
+          </div>
+          <button id="reload-plugin">刷新工具页 ↻</button>
+        </header>
+        <div id="plugin-error" class="notice" hidden role="status"></div>
+        <iframe
+          id="plugin-frame"
+          title="工具页面"
+          allow="clipboard-write"
+          hidden
+        ></iframe>
+      </main>
+    </div>
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

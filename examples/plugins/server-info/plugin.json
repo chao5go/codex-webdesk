@@ -1,0 +1,10 @@
+{
+  "apiVersion": 1,
+  "id": "server-info",
+  "name": "服务器概览",
+  "description": "插件示例：查看主机、运行时间与内存",
+  "icon": "◈",
+  "order": 30,
+  "entry": "index.html",
+  "server": "server.mjs"
+}

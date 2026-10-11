@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Codex · 会话历史</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231d6956'/%3E%3Cpath d='m8 10 6 6-6 6m9 0h7' fill='none' stroke='white' stroke-width='3'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <span class="mark" aria-hidden="true">&gt;_</span>
+        <div>
+          <h1>Codex 会话历史</h1>
+          <div class="sub">找到对话，接着做。</div>
+        </div>
+      </div>
+      <div class="toolbar">
+        <span id="status" class="status"></span
+        ><button id="refresh" class="button">刷新会话</button>
+      </div>
+    </header>
+    <div class="layout">
+      <aside aria-label="会话列表">
+        <div class="filters">
+          <input
+            id="search"
+            type="search"
+            placeholder="搜索标题、目录、ID 或对话内容"
+            aria-label="搜索会话"
+          />
+          <div class="filter-line">
+            <select id="project" aria-label="筛选项目">
+              <option value="">全部项目</option></select
+            ><select id="archive" aria-label="筛选状态">
+              <option value="active">正常会话</option>
+              <option value="all">包含归档</option>
+              <option value="archived">仅归档</option>
+            </select>
+          </div>
+          <div id="merge-tools">
+            <button id="select-all" class="button">全选当前列表</button
+            ><button id="clear-picks" class="button">清空选择</button
+            ><button id="merge" class="button primary" disabled>
+              合并后继续（0）
+            </button>
+          </div>
+          <div id="export-tools" class="filter-line">
+            <select id="export-format" aria-label="导出格式">
+              <option value="html">HTML 离线快照</option>
+              <option value="md">Markdown</option>
+              <option value="json">JSON</option></select
+            ><button id="export" class="button">导出全部</button>
+          </div>
+          <div class="count" id="count" aria-live="polite">正在读取…</div>
+        </div>
+        <div id="list" class="list"></div>
+      </aside>
+      <main id="detail">
+        <div class="empty">选择一段会话，查看对话并复制恢复命令。</div>
+      </main>
+    </div>
+    <div id="toast" class="toast hidden" role="status"></div>
+    <dialog id="merge-dialog" aria-labelledby="merge-title">
+      <h2 id="merge-title">合并上下文，继续工作</h2>
+      <p class="metadata">
+        生成本地交接文件，让新的 Codex CLI 会话读取后继续。原会话会保留。
+      </p>
+      <div id="merge-summary" class="metadata"></div>
+      <label for="merge-objective">接下来想做什么（选填）</label>
+      <textarea
+        id="merge-objective"
+        maxlength="2000"
+        rows="3"
+        placeholder="例如：结合这几段讨论，继续完成 ETL 任务的增量逻辑。"
+      ></textarea>
+      <div id="merge-result" class="hidden">
+        <p id="merge-info" class="metadata"></p>
+        <p class="metadata">
+          在保存这些会话的服务器终端运行，文件需保留到新会话读取完成。
+        </p>
+        <textarea
+          id="merge-command"
+          rows="4"
+          readonly
+          aria-label="合并后继续的命令"
+        ></textarea
+        ><button id="copy-merge" class="button primary">复制启动命令</button>
+      </div>
+      <p id="merge-error" class="error" role="alert"></p>
+      <div class="dialog-actions">
+        <button id="close-merge" class="button">关闭</button
+        ><button id="create-merge" class="button primary">生成继续命令</button>
+      </div>
+    </dialog>
+    <script src="./app.js" defer></script>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "host": "127.0.0.1",
+  "port": 8080,
+  "cwd": "/srv/projects/my-app",
+  "workspaceRoot": "/srv/projects",
+  "codexBin": "codex",
+  "disabledPlugins": [],
+  "pluginOptions": {
+    "codex-history": {
+      "pythonBin": "python3"
+    }
+  }
+}

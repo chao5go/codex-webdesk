@@ -1,0 +1,44 @@
+body {
+  font: 14px/1.7 system-ui;
+  color: #20382d;
+  background: #f7faf8;
+  margin: 0;
+  padding: 28px;
+}
+h1 {
+  font-size: 22px;
+}
+p {
+  color: #7d8b83;
+}
+#info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+#info div {
+  padding: 22px;
+  background: white;
+  border: 1px solid #e1e9e3;
+  border-radius: 10px;
+}
+small,
+strong {
+  display: block;
+}
+small {
+  color: #839086;
+}
+strong {
+  font-size: 20px;
+  margin-top: 10px;
+}
+button {
+  padding: 8px 16px;
+  color: #167b60;
+  background: #edf6f1;
+  border: 1px solid #cee4d8;
+  border-radius: 7px;
+  cursor: pointer;
+}

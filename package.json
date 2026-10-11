@@ -1,0 +1,44 @@
+{
+  "name": "codex-remote-web",
+  "version": "0.1.0",
+  "description": "A lightweight, self-hosted web workbench for Codex CLI on remote servers",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "codex-remote-web": "bin/cli.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "dist",
+    "README.md",
+    "LICENSE",
+    "docs",
+    "config.example.json",
+    "SECURITY.md",
+    "examples",
+    "CONTRIBUTING.md"
+  ],
+  "scripts": {
+    "build": "node scripts/build.js",
+    "start": "node bin/cli.js start",
+    "dev": "npm run build && node bin/cli.js start",
+    "test": "node --test test/*.test.js",
+    "check": "node scripts/check.js",
+    "prepack": "npm run build",
+    "test:browser": "npm run build && node test/browser-smoke.mjs",
+    "test:package": "npm pack --silent && node scripts/package-smoke.js"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "playwright": "^1.64.0",
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/xterm": "^6.0.0",
+    "dompurify": "^3.3.0",
+    "highlight.js": "^11.11.1",
+    "marked": "^16.4.0"
+  }
+}
