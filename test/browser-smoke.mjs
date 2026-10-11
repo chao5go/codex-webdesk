@@ -68,6 +68,10 @@ try {
   await page.waitForFunction(() =>
     document.querySelector("#status").textContent.includes("Completed"),
   );
+  // Status and answer rendering are scheduled separately; wait for visible output.
+  await page.waitForFunction(() =>
+    document.querySelector("#structured").textContent.includes("const answer = 42"),
+  );
   assert.match(
     await page.locator("#structured").innerText(),
     /const answer = 42/,
