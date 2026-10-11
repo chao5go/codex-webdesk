@@ -13,6 +13,7 @@
 | Repository secret `NPM_TOKEN` | 已设置，来源于本机 `~/.npm_token` | npm 发布 |
 | Repository secret `PYPI_TOKEN` | 已设置，来源于本机 `~/.pypi_token` | PyPI 发布 |
 | Environment `release` | 仅允许 main 分支，无人工 reviewer/wait timer | 两个发布 job 自动执行 |
+| 安装包恢复备份 | 同版本 GitHub Release 草稿/正式 Release | 全量重跑复用原产物，不重新打包 |
 | 并发组 | `release-main`，不取消运行中的发布 | 防止同一版本并发发布 |
 | 发布触发 | push main；手动 Run workflow | 自动 patch / 手动 minor、major |
 

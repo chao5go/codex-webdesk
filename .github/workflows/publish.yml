@@ -71,11 +71,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          RUN_ID: ${{ github.run_id }}
           VERSION: ${{ steps.version.outputs.version }}
-        run: gh run download "$RUN_ID" --name "release-$VERSION" --dir release-artifacts
+        run: gh release download "v$VERSION" --dir release-artifacts
       - uses: actions/upload-artifact@v4
-        if: steps.version.outputs.reused != 'true'
         with:
           name: release-${{ steps.version.outputs.version }}
           path: release-artifacts/
@@ -93,6 +91,17 @@ jobs:
           git commit -m "chore(release): $VERSION" -m "Release-Source: $RELEASE_SOURCE"
           git tag -a "v$VERSION" -m "Codex Webdesk $VERSION"
           git push --atomic origin HEAD:main "v$VERSION"
+      - name: Preserve tested artifacts before publishing
+        if: steps.version.outputs.reused != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          if ! gh release view "v$VERSION" >/dev/null 2>&1; then
+            gh release create "v$VERSION" --verify-tag --draft --title "Codex Webdesk $VERSION" --generate-notes
+          fi
+          gh release upload "v$VERSION" release-artifacts/* --clobber
 
   npm:
     needs: build
@@ -161,3 +170,4 @@ jobs:
             gh release create "v$VERSION" --verify-tag --title "Codex Webdesk $VERSION" --generate-notes
           fi
           gh release upload "v$VERSION" release-artifacts/* --clobber
+          gh release edit "v$VERSION" --draft=false --latest
