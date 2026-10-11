@@ -9,7 +9,7 @@ const archive = path.resolve(`${name}-${version}.tgz`);
 const root = await mkdtemp(path.join(os.tmpdir(), 'codex-plugin-package-'));
 let child;
 try {
-  execFileSync('npm', ['install', '--prefix', root, '--omit=dev', '--no-audit', '--no-fund', process.env.WEBDESK_PACKAGE_SPEC || archive], { stdio: 'pipe' });
+  execFileSync('npm', ['install', '--prefix', root, '--omit=dev', '--no-audit', '--no-fund', '--registry=https://registry.npmjs.org', '--cache', path.join(root, 'npm-cache'), process.env.WEBDESK_PACKAGE_SPEC || archive], { stdio: 'pipe' });
   const packageDir = path.join(root, `node_modules/${name}`);
   const bin = path.join(root, `node_modules/.bin/${name}`);
   assert.equal(execFileSync(bin, ['--version'], { encoding: 'utf8' }).trim(), version);

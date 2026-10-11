@@ -15,7 +15,7 @@ jobs:
           registry-url: https://registry.npmjs.org
       - uses: astral-sh/setup-uv@v6
       - run: npm ci
-      - run: npm run check && npm test && npm run test:package
+      - run: npm run check && npm run build && npm test && npm run test:package
       - run: npx playwright install --with-deps chromium
       - run: npm run test:browser
       - run: uv build --out-dir python-dist
