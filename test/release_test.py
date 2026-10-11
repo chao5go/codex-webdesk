@@ -2,6 +2,7 @@
 import hashlib
 import importlib.util
 import json
+import os
 from pathlib import Path
 import subprocess
 import tempfile
@@ -68,6 +69,7 @@ class ReleaseTests(unittest.TestCase):
             archive.write_bytes(b"original tested artifact")
             metadata = {"version":"0.1.3", "dist":{"shasum":hashlib.sha1(archive.read_bytes()).hexdigest()}}
             with patch.object(registry, "get", return_value=metadata), patch.object(registry.subprocess, "run") as run:
+                run.return_value = subprocess.CompletedProcess([], 0, stdout="0.1.3", stderr="")
                 registry.publish("npm", "0.1.3", root)
                 self.assertEqual(run.call_count, 1)
                 self.assertEqual(run.call_args.args[0][1], "exec")
@@ -83,10 +85,35 @@ class ReleaseTests(unittest.TestCase):
             for file in files: file.write_bytes(file.name.encode())
             entries = [{"filename":f.name, "digests":{"sha256":hashlib.sha256(f.read_bytes()).hexdigest()}} for f in files]
             with patch.object(registry, "get", return_value={"urls":entries[:1]}), patch.object(registry, "wait_for", return_value={"urls":entries}), patch.object(registry.subprocess, "run") as run:
+                run.return_value = subprocess.CompletedProcess([], 0, stdout="0.1.3", stderr="")
                 registry.publish("pypi", "0.1.3", root)
                 upload = run.call_args_list[0].args[0]
                 self.assertIn(str(files[1]), upload)
                 self.assertNotIn(str(files[0]), upload)
+
+    def test_npm_relative_artifact_is_published_as_an_absolute_file_path(self):
+        original = Path.cwd()
+        with tempfile.TemporaryDirectory() as tmp:
+            try:
+                os.chdir(tmp)
+                root = Path("release-artifacts")
+                root.mkdir()
+                archive = root / "codex-webdesk-0.1.3.tgz"
+                archive.write_bytes(b"npm artifact")
+                data = {"version":"0.1.3", "dist":{"shasum":hashlib.sha1(archive.read_bytes()).hexdigest()}}
+                with patch.object(registry, "get", return_value=None), patch.object(registry, "wait_for", return_value=data), patch.object(registry, "verify_command"), patch.object(registry.subprocess, "run") as run:
+                    registry.publish("npm", "0.1.3", root)
+                    self.assertTrue(Path(run.call_args.args[0][2]).is_absolute())
+                    self.assertTrue(Path(run.call_args.args[0][2]).is_file())
+            finally:
+                os.chdir(original)
+
+    def test_install_index_delay_retries_verification_without_republishing(self):
+        results = [subprocess.CompletedProcess([], 1, stdout="", stderr="not indexed"),
+                   subprocess.CompletedProcess([], 0, stdout="0.1.3", stderr="")]
+        with patch.object(registry.subprocess, "run", side_effect=results) as run, patch.object(registry.time, "sleep"):
+            registry.verify_command(["uvx", "codex-webdesk@0.1.3", "--version"])
+            self.assertEqual(run.call_count, 2)
 
 if __name__ == "__main__":
     unittest.main()

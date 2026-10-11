@@ -33,9 +33,23 @@ def wait_for(url, ready, seconds=1200):
     raise RuntimeError("Registry visibility timed out; check scan/staging status, then rerun failed jobs")
 
 
+def verify_command(command, seconds=360):
+    """Package JSON and install indexes can become visible at different times."""
+    deadline = time.monotonic() + seconds
+    while True:
+        result = subprocess.run(command, text=True, capture_output=True)
+        if result.returncode == 0:
+            print(result.stdout.strip(), flush=True)
+            return
+        if time.monotonic() >= deadline:
+            raise RuntimeError("Published-package install verification failed: " + result.stderr)
+        print("Waiting for install index propagation (no additional upload)...", flush=True)
+        time.sleep(20)
+
+
 def publish(channel, version, folder):
     if channel == "npm":
-        archive = folder / f"codex-webdesk-{version}.tgz"
+        archive = (folder / f"codex-webdesk-{version}.tgz").resolve()
         url = f"https://registry.npmjs.org/codex-webdesk/{version}"
         existing = get(url)
         if not existing:
@@ -44,8 +58,8 @@ def publish(channel, version, folder):
         if data["dist"]["shasum"] != hashlib.sha1(archive.read_bytes()).hexdigest():
             raise RuntimeError("Published npm artifact differs from this release")
         # Use a fresh cache so a pre-scan negative response cannot hide the release.
-        subprocess.run(["npm", "exec", "--yes", "--registry=https://registry.npmjs.org",
-                        f"--package=codex-webdesk@{version}", "--", "codex-webdesk", "--version"], check=True)
+        verify_command(["npm", "exec", "--yes", "--prefer-online", "--registry=https://registry.npmjs.org",
+                        f"--package=codex-webdesk@{version}", "--", "codex-webdesk", "--version"])
     else:
         files = [folder / f"codex_webdesk-{version}{suffix}" for suffix in ("-py3-none-any.whl", ".tar.gz")]
         url = f"https://pypi.org/pypi/codex-webdesk/{version}/json"
@@ -61,7 +75,7 @@ def publish(channel, version, folder):
             artifact = folder / item["filename"]
             if artifact.is_file() and item["digests"]["sha256"] != hashlib.sha256(artifact.read_bytes()).hexdigest():
                 raise RuntimeError("Published PyPI artifact differs; rerun failed publish jobs with original build artifacts")
-        subprocess.run(["uvx", f"codex-webdesk@{version}", "--version"], check=True)
+        verify_command(["uvx", "--refresh", "--index-url", "https://pypi.org/simple", f"codex-webdesk@{version}", "--version"])
     print(f"{channel} {version} verified", flush=True)
 
 
