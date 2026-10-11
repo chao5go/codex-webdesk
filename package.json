@@ -1,7 +1,7 @@
 {
   "name": "codex-webdesk",
   "version": "0.1.4",
-  "description": "A lightweight, self-hosted web workbench for Codex CLI on remote servers",
+  "description": "Codex in your browser. Run remote tasks, follow live output, and resume your sessions. Self-hosted; npm or uv.",
   "type": "module",
   "license": "MIT",
   "engines": {

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "codex-webdesk"
 dynamic = ["version"]
-description = "A self-hosted browser workbench for Codex CLI; requires Node.js 22+"
+description = "Codex in your browser: remote tasks, live output and session resume. Requires Node.js 22+"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"

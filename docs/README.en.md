@@ -1,48 +1,61 @@
 # Codex Webdesk
 
-A lightweight, self-hosted browser workbench for **Codex CLI on your VPS**. Run prompts, follow streaming output, stop tasks and browse local history. MIT licensed; no cloud storage or separate model API integration.
+**Your Codex workspace, a browser tab away.**
 
-## Quick start
+Run tasks on your server, follow live output, and pick up yesterday’s conversations. Self-hosted, with your existing Codex CLI login and configuration.
 
-Requires Node.js 22+, Python 3.10+ for the full history plugin, Linux/macOS and an installed, authenticated Codex CLI. CLI flags were checked against version 0.160.1.
+[中文](../README.md) · [Deployment](deployment.md) · [Plugins](plugins.md) · [Configuration reference (中文)](reference.md)
 
-```bash
-npm ci
-npm run build
-node bin/cli.js start --cwd /absolute/path/to/project --port 8080
-```
+![Workspace — simulated CLI output](screenshot.png)
 
-The server binds to localhost and prints a generated access token. On your local computer:
+## Start in a minute
+
+Requires Node.js 22+, an installed and authenticated Codex CLI, and Linux/macOS. Full session management also requires Python 3.10+. The uv package includes the application, but does not install Node.js or Codex.
 
 ```bash
-ssh -N -L 8080:127.0.0.1:8080 your-user@your-vps
+npx codex-webdesk start --cwd /srv/my-project
+# Or
+uvx codex-webdesk start --cwd /srv/my-project
 ```
 
-Open `http://127.0.0.1:8080` and enter the token. Set `CODEX_WEBDESK_TOKEN` to a random fixed secret for later startups. Use HTTPS when exposing the service through a reverse proxy.
-
-## Features
-
-- Multiline prompts, keyboard submission and review/test/debug/refactor presets.
-- Model, reasoning effort, directory, additional context and sandbox controls.
-- Single-task execution via `spawn`, SSE reconnect/replay, Markdown highlighting and ANSI terminal output.
-- Whole-process-group cancellation and local JSON task persistence.
-- Full Codex history plugin: conversation search, filters, HTML/Markdown/JSON exports, recoverable deletion, multi-session handoffs and direct resume.
-- Local page plugins with optional namespaced Node backends, shared login and automatic navigation. See [plugin guide](plugins.md) and the included server-info example.
-- Token/Bearer authentication, HttpOnly cookies, rate limiting and same-origin write checks.
-- Bundled assets without external CDN requests.
-
-This is a personal-use MVP. Approval UI, multiple users, queues and terminal input are not implemented. Data retention is bounded per task, but old task files require manual archival. Tests use a fake CLI; paid model execution and memory benchmarks have not been run.
+The server listens on localhost:8080 and prints an access token. Forward the port from your computer:
 
 ```bash
-npm run check
-npm test
-npx playwright install chromium
-npm run test:browser
-npm pack
+ssh -N -L 8080:127.0.0.1:8080 your-user@your-server
 ```
 
-The project has not been published to npm. See the [Chinese README](../README.md) for complete configuration and limits, [deployment](deployment.md), [architecture/API](architecture.md) and [contributing](../CONTRIBUTING.md).
+Open http://127.0.0.1:8080 and enter the token.
 
-## Package installation
+## A place to work, and return to
 
-Install with `npm install -g codex-webdesk` or `uv tool install codex-webdesk`, then run `codex-webdesk start --cwd /path/to/project`. Upgrade with `npm install -g codex-webdesk@latest` or `uv tool upgrade codex-webdesk`. For a temporary run use `uvx codex-webdesk@0.1.0 start`. Both distributions require Node.js 22+ and an installed, authenticated Codex CLI. The npm distribution additionally needs Python 3.10+ for full session management. Linux/macOS are supported; Windows is unverified. Choose one installation channel to avoid command collisions. Legacy data/plugin directories and `CODEX_REMOTE_WEB_TOKEN` remain supported; `CODEX_WEBDESK_TOKEN` takes precedence.
+- **Start with a goal.** Review code, generate tests, debug or refactor with prompt presets and configurable permissions.
+- **Watch the work happen.** Streaming Markdown, highlighted code, copy buttons and raw terminal output.
+- **Come back later.** Tasks continue when the tab closes; reconnect after reload and browse saved results.
+- **Keep the context.** Search native Codex conversations and resume them in the workbench.
+- **Take your work with you.** Export HTML, Markdown or JSON; combine sessions into handoff files.
+- **Make room for your tools.** Local plugins share authentication, navigation and one port.
+
+No database, locally bundled frontend assets, MIT licensed.
+
+## Install and update
+
+Choose one channel:
+
+```bash
+uv tool install codex-webdesk
+uv tool upgrade codex-webdesk
+
+# Or npm
+npm install -g codex-webdesk
+npm install -g codex-webdesk@latest
+```
+
+Restart the service after upgrading. Configuration and history are stored outside the installation.
+
+## Scope
+
+Designed for personal remote development, with one task at a time. Defaults to read-only; test generation and refactoring presets select workspace-write. Closing the browser leaves tasks running; stopping the service interrupts them. No multi-user isolation, interactive terminal or web approval flow. Use HTTPS for public access and protect the access token as a server credential.
+
+See [deployment](deployment.md), [contributing](../CONTRIBUTING.md), [release automation](releasing.md), and [repository setup](repository-settings.md). Screenshots use simulated output, not a live model run.
+
+Independent community project, not affiliated with OpenAI. [MIT](../LICENSE).

@@ -63,6 +63,12 @@ try {
   await page.goto(`${url}/?token=${token}`);
   await page.waitForSelector("#workspace:not([hidden])");
   assert.equal(new URL(page.url()).search, "");
+  if (process.env.EMPTY_SCREENSHOT_PATH)
+    await page.screenshot({ path: process.env.EMPTY_SCREENSHOT_PATH, fullPage: true });
+  await page.locator(".advanced > summary").click();
+  await page.fill("#model", "test-model");
+  await page.selectOption("#effort", "high");
+  await page.locator(".advanced > summary").click();
   await page.click('[data-preset="review"]');
   await page.click("#run");
   await page.waitForFunction(() =>
@@ -144,6 +150,11 @@ try {
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   );
+  assert.equal(await page.locator("#sidebar-toggle").getAttribute("aria-expanded"), "false");
+  if (process.env.MOBILE_SCREENSHOT_PATH)
+    await page.screenshot({ path: process.env.MOBILE_SCREENSHOT_PATH, fullPage: true });
+  await page.click("#sidebar-toggle");
+  assert.equal(await page.locator("#sidebar-toggle").getAttribute("aria-expanded"), "true");
   await page.click("#logout");
   await page.waitForSelector("#login:not([hidden])");
   assert.deepEqual(errors, []);

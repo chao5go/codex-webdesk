@@ -142,6 +142,7 @@ function loadFields(item) {
   $("cwd").value = item.cwd || $("cwd").value;
   $("model").value = item.model || "";
   $("effort").value = item.effort || "";
+  updateConfigSummary();
   $("sandbox").value = item.sandbox || "read-only";
   $("context-paths").value = (item.contextPaths || []).join("\n");
   $("prompt").value = item.prompt || "";
@@ -510,3 +511,11 @@ export async function resumeSession(id) {
   $("prompt").value = "请结合上述会话，继续尚未完成的工作。";
   $("prompt").focus();
 }
+
+function updateConfigSummary() {
+  $("config-summary").textContent = [
+    $("model").value || "CLI 默认模型",
+    $("effort").value ? `推理 ${$("effort").value}` : "默认推理",
+  ].join(" · ");
+}
+for (const id of ["model", "effort"]) $(id).addEventListener("input", updateConfigSummary);

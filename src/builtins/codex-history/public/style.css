@@ -404,3 +404,8 @@ select,
 textarea {
   border-radius: 7px;
 }
+/* Shared Webdesk palette and type scale. */
+:root { color:#25342e; background:#f7f9f5; --green:#267459; --muted:#68776f; --line:#dfe5de; }
+header { background:#fff; padding:22px 26px; }h1 { font-size:20px; }.mark { background:#e9f2df; color:#426e3c; border-radius:10px; }.button { border-radius:8px; }aside { background:#f7f9f5; }input,select { border-radius:8px; }.session { border-radius:10px; }main { background:#fff; }
+
+body { font-family:Arial,"Noto Sans CJK SC","PingFang SC","Microsoft YaHei","WenQuanYi Zen Hei",sans-serif; }

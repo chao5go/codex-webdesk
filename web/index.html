@@ -3,14 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Codex Webdesk</title>
+    <title>Codex Webdesk · 你的浏览器 Codex 工作台</title>
+    <meta name="theme-color" content="#182824" />
+    <meta name="description" content="在浏览器运行服务器上的 Codex，查看实时输出、找回会话并继续工作。" />
     <link rel="stylesheet" href="/app.css" />
     <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
     <div id="login" class="login">
       <form id="login-form" class="login-card">
-        <div class="brand-icon">⌘</div>
+        <div class="brand-icon">&gt;_</div>
         <h1>Codex Webdesk</h1>
         <p>连接你的服务器，继续手头的工作。</p>
         <label
@@ -26,13 +28,15 @@
       </form>
     </div>
     <div id="workspace" class="layout" hidden>
-      <aside class="sidebar">
+      <aside class="sidebar" id="sidebar">
+        <button id="sidebar-toggle" type="button" aria-expanded="false" aria-controls="sidebar-content">导航与历史 <span>☰</span></button>
+        <div id="sidebar-content">
         <a class="brand" href="/"
-          ><span class="brand-icon">⌘</span
-          ><span>Codex <b>Remote Web</b></span></a
+          ><span class="brand-icon">&gt;_</span
+          ><span>Codex <b>Webdesk</b></span></a
         >
         <div class="server-label">
-          <span class="dot"></span> REMOTE WORKSPACE <span id="version"></span>
+          <span class="dot"></span> 自托管工作空间 <span id="version"></span>
         </div>
         <nav id="tool-nav" class="tool-nav" aria-label="工具导航"></nav>
         <div id="workbench-sidebar">
@@ -56,14 +60,15 @@
           <div id="history-list" class="history-list"></div>
         </div>
         <footer>
-          <span>SELF-HOSTED · v0.1</span><button id="logout">退出登录</button>
+          <span>数据保存在本机</span><button id="logout">退出登录</button>
         </footer>
+        </div>
       </aside>
       <main id="workbench-view">
         <header>
           <div>
-            <span class="eyebrow">YOUR SERVER. YOUR WORKFLOW.</span>
-            <h1>任务工作台</h1>
+            <span class="eyebrow">WORKSPACE / CODEX</span>
+            <h1>把想法，变成下一步。</h1><p class="page-description">在浏览器发起任务，在你的服务器上完成。</p>
           </div>
           <div id="status" class="status idle">● Idle</div>
         </header>
@@ -71,8 +76,8 @@
         <div class="deck">
           <section class="composer">
             <div class="section-title">
-              <h2>开始一次任务</h2>
-              <span>01 / CONFIGURE</span>
+              <h2>今天要完成什么？</h2>
+              <span>NEW TASK</span>
             </div>
             <form id="task-form">
               <label
@@ -81,7 +86,38 @@
                   required
                   placeholder="/home/ubuntu/project"
               /></label>
-              <div class="fields">
+
+              <div class="label-row">
+                <label for="prompt">任务指令</label><span>选择一个起点</span>
+              </div>
+              <div class="presets">
+                <button type="button" data-preset="review">代码评审</button
+                ><button type="button" data-preset="tests">生成单测</button
+                ><button type="button" data-preset="debug">排查问题</button
+                ><button type="button" data-preset="refactor">
+                  代码重构
+                </button>
+              </div>
+              <div id="resume-banner" class="resume-banner" hidden>
+                <span id="resume-label"></span
+                ><button type="button" id="cancel-resume">取消</button>
+              </div>
+              <textarea
+                id="prompt"
+                rows="7"
+                required
+                maxlength="50000"
+                placeholder="描述你的目标、相关文件和预期结果…"
+              ></textarea>
+              <label
+                >执行权限<select id="sandbox">
+                  <option value="read-only">Read only · 只读分析</option>
+                  <option value="workspace-write">
+                    Workspace write · 允许修改项目
+                  </option>
+                </select></label
+              >
+              <details class="advanced"><summary>模型与上下文 <span id="config-summary">沿用 CLI 配置，可展开调整</span></summary>              <div class="fields">
                 <label
                   >模型<input
                     id="model"
@@ -99,14 +135,6 @@
                   </select></label
                 >
               </div>
-              <label
-                >执行权限<select id="sandbox">
-                  <option value="read-only">Read only · 只读分析</option>
-                  <option value="workspace-write">
-                    Workspace write · 允许修改项目
-                  </option>
-                </select></label
-              >
               <details>
                 <summary>更多上下文目录</summary>
                 <label
@@ -117,29 +145,7 @@
                   ></textarea></label
                 ><small>--add-dir 会扩大可写范围（仍受沙箱限制）。</small>
               </details>
-              <div class="divider"></div>
-              <div class="label-row">
-                <label for="prompt">任务指令</label><span>QUICK ACTIONS</span>
-              </div>
-              <div class="presets">
-                <button type="button" data-preset="review">◎ 代码评审</button
-                ><button type="button" data-preset="tests">▤ 生成单测</button
-                ><button type="button" data-preset="debug">◇ Bug 排查</button
-                ><button type="button" data-preset="refactor">
-                  ↗ 代码重构
-                </button>
-              </div>
-              <div id="resume-banner" class="resume-banner" hidden>
-                <span id="resume-label"></span
-                ><button type="button" id="cancel-resume">取消</button>
-              </div>
-              <textarea
-                id="prompt"
-                rows="8"
-                required
-                maxlength="50000"
-                placeholder="描述你的目标、相关文件和预期结果…"
-              ></textarea>
+</details>
               <div class="submit-row">
                 <span>⌘ / Ctrl + Enter 执行</span
                 ><button id="run" class="primary">
@@ -154,12 +160,12 @@
           <section class="console">
             <div class="section-title">
               <h2>执行输出</h2>
-              <span>02 / OBSERVE</span>
+              <span>LIVE OUTPUT</span>
             </div>
             <div class="console-toolbar">
               <div class="output-tabs">
-                <button id="structured-tab" class="selected">结构化</button
-                ><button id="raw-tab">Raw Terminal</button>
+                <button id="structured-tab" class="selected">对话结果</button
+                ><button id="raw-tab">原始终端</button>
               </div>
               <div>
                 <button id="export" title="导出当前记录">导出</button
@@ -171,23 +177,23 @@
             </div>
             <div id="structured" class="output">
               <div class="empty">
-                <div class="empty-symbol">⌘</div>
-                <h3>让下一步更清晰</h3>
+                <div class="empty-symbol">&gt;_</div><div class="empty-kicker">你的远程开发空间</div>
+                <h3>工作在服务器，掌控在这里。</h3>
                 <p>
-                  选择快捷指令，或写下你的任务。<br />代码、执行过程和结果会实时出现在这里。
+                  评审一段代码，排查一个问题，或继续昨天的会话。<br />写下目标，Codex 的执行过程和结果将在这里实时呈现。
                 </p>
-                <span>CONNECTED TO YOUR CLI</span>
+                <span>CODEX WEBDESK</span>
               </div>
             </div>
             <div id="raw" hidden></div>
             <div class="console-footer">
-              <span id="connection">SSE · 等待连接</span
-              ><span>LOCAL DATA · NO CLOUD STORAGE</span>
+              <span id="connection">等待任务连接</span
+              ><span>记录保存在服务器</span>
             </div>
           </section>
         </div>
         <div class="bottom-note">
-          CODEX REMOTE WEB <span>为远程开发而生。把工作留在服务器上。</span>
+          CODEX WEBDESK <span>为远程开发而生。把工作留在服务器上。</span>
         </div>
       </main>
       <main id="plugin-view" class="plugin-main" hidden>

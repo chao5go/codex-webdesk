@@ -187,3 +187,10 @@ if (token) {
     if (error.message !== "登录已过期，请重新连接")
       $("login-error").textContent = error.message;
   });
+
+const sidebarToggle = $("sidebar-toggle");
+sidebarToggle.addEventListener("click", () => {
+  const open = sidebarToggle.getAttribute("aria-expanded") !== "true";
+  sidebarToggle.setAttribute("aria-expanded", String(open));
+  $("sidebar").classList.toggle("mobile-open", open);
+});
