@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import subprocess
 import time
+import tempfile
 import urllib.request
 import urllib.error
 
@@ -33,11 +34,11 @@ def wait_for(url, ready, seconds=1200):
     raise RuntimeError("Registry visibility timed out; check scan/staging status, then rerun failed jobs")
 
 
-def verify_command(command, seconds=360):
+def verify_command(command, seconds=360, cwd=None):
     """Package JSON and install indexes can become visible at different times."""
     deadline = time.monotonic() + seconds
     while True:
-        result = subprocess.run(command, text=True, capture_output=True)
+        result = subprocess.run(command, text=True, capture_output=True, cwd=cwd)
         if result.returncode == 0:
             print(result.stdout.strip(), flush=True)
             return
@@ -58,8 +59,12 @@ def publish(channel, version, folder):
         if data["dist"]["shasum"] != hashlib.sha1(archive.read_bytes()).hexdigest():
             raise RuntimeError("Published npm artifact differs from this release")
         # Use a fresh cache so a pre-scan negative response cannot hide the release.
-        verify_command(["npm", "exec", "--yes", "--prefer-online", "--registry=https://registry.npmjs.org",
-                        f"--package=codex-webdesk@{version}", "--", "codex-webdesk", "--version"])
+        # npm exec inside this same-name checkout can select the uninstalled local
+        # package instead of the registry package. Verify from an isolated cwd.
+        with tempfile.TemporaryDirectory(prefix="webdesk-npm-verify-") as directory:
+            verify_command(["npm", "exec", "--yes", "--prefer-online", "--registry=https://registry.npmjs.org",
+                            "--cache", str(Path(directory) / "cache"),
+                            f"--package=codex-webdesk@{version}", "--", "codex-webdesk", "--version"], cwd=directory)
     else:
         files = [folder / f"codex_webdesk-{version}{suffix}" for suffix in ("-py3-none-any.whl", ".tar.gz")]
         url = f"https://pypi.org/pypi/codex-webdesk/{version}/json"

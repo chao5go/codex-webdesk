@@ -73,6 +73,7 @@ class ReleaseTests(unittest.TestCase):
                 registry.publish("npm", "0.1.3", root)
                 self.assertEqual(run.call_count, 1)
                 self.assertEqual(run.call_args.args[0][1], "exec")
+                self.assertNotEqual(Path(run.call_args.kwargs["cwd"]), Path.cwd())
             metadata["dist"]["shasum"] = "wrong"
             with patch.object(registry, "get", return_value=metadata), patch.object(registry.subprocess, "run") as run:
                 with self.assertRaises(RuntimeError): registry.publish("npm", "0.1.3", root)
