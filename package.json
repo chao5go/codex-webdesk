@@ -1,6 +1,6 @@
 {
   "name": "codex-webdesk",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Codex in your browser. Run remote tasks, follow live output, and resume your sessions. Self-hosted; npm or uv.",
   "type": "module",
   "license": "MIT",
